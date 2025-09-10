@@ -1,0 +1,4 @@
+flask==2.3.3
+moviepy==1.0.3
+openai-whisper==20231117
+gunicorn==21.2.0
