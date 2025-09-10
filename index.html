@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 AI Video Tool - Transcript & Audio Extraction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+        
+        .logo {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .description {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .upload-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .upload-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .file-input-container {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .file-input-label:hover {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.05);
+        }
+        
+        .file-input-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ff6b6b;
+        }
+        
+        .file-input-text {
+            font-size: 1.2rem;
+        }
+        
+        .file-input-formats {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 8px;
+        }
+        
+        .language-selection {
+            margin: 20px 0;
+            text-align: left;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .language-selection h3 {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .language-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .language-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .language-option input {
+            accent-color: #ff6b6b;
+        }
+        
+        .generate-btn {
+            background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .generate-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .results-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+        
+        .results-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #4cd964;
+        }
+        
+        .downloads {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .download-card {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .download-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .download-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .download-btn {
+            background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            text-decoration: none;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(255, 107, 107, 0.3);
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #ff6b6b;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px auto;
+            max-width: 400px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+        
+        .file-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: auto;
+            padding: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .description {
+                font-size: 1rem;
+            }
+            
+            .upload-container, .results-container {
+                padding: 20px;
+            }
+            
+            .generate-btn {
+                padding: 12px 24px;
+                font-size: 1.1rem;
+            }
+            
+            .language-options {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">🎬</div>
+            <h1>AI Video Tool</h1>
+            <p class="description">Upload a video to automatically get transcript + audio extracted with Red Universe AI</p>
+        </header>
+        
+        <div class="upload-container">
+            <h2 class="upload-title"><i class="fas fa-upload"></i> Upload Your Video</h2>
+            
+            <div class="file-input-container">
+                <label class="file-input-label">
+                    <i class="fas fa-cloud-upload-alt file-input-icon"></i>
+                    <span class="file-input-text">Click to browse or drag & drop</span>
+                    <span class="file-input-formats">Supported formats: MP4, MOV, AVI (Max 100MB)</span>
+                    <input type="file" class="file-input" id="videoFile" accept=".mp4,.mov,.avi">
+                </label>
+            </div>
+            
+            <div class="file-info" id="fileInfo">
+                <i class="fas fa-file-video"></i>
+                <span id="fileName">No file selected</span>
+                <span id="fileSize"></span>
+            </div>
+            
+            <div class="language-selection">
+                <h3><i class="fas fa-globe"></i> Select Transcript Language</h3>
+                <div class="language-options">
+                    <label class="language-option">
+                        <input type="radio" name="language" value="english" checked>
+                        English
+                    </label>
+                    <label class="language-option">
+                        <input type="radio" name="language" value="hindi">
+                        Hindi
+                    </label>
+                </div>
+            </div>
+            
+            <button class="generate-btn" id="generateBtn" disabled>
+                <i class="fas fa-magic"></i> Generate Transcript & Audio
+            </button>
+        </div>
+        
+        <div class="loading-container" id="loadingContainer">
+            <div class="spinner"></div>
+            <p class="loading-text">Processing your video with Red Universe AI...</p>
+            <p>This may take a few moments</p>
+            
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            
+            <div class="steps">
+                <p id="stepText">Uploading video...</p>
+            </div>
+        </div>
+        
+        <div class="results-container" id="resultsContainer">
+            <h2 class="results-title"><i class="fas fa-check-circle"></i> Processing Complete!</h2>
+            <p>Your transcript and audio are ready for download.</p>
+            
+            <div class="downloads">
+                <div class="download-card">
+                    <i class="fas fa-file-alt download-icon" style="color: #ff6b6b;"></i>
+                    <h3 class="download-title">Transcript</h3>
+                    <p>Text file containing your video's transcript</p>
+                    <a href="#" class="download-btn" id="downloadTranscript">
+                        <i class="fas fa-download"></i> Download TXT
+                    </a>
+                </div>
+                
+                <div class="download-card">
+                    <i class="fas fa-music download-icon" style="color: #4cd964;"></i>
+                    <h3 class="download-title">Audio</h3>
+                    <p>MP3 audio extracted from your video</p>
+                    <a href="#" class="download-btn" id="downloadAudio">
+                        <i class="fas fa-download"></i> Download MP3
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>AI Video Tool © 2025 [powered by Red Universe]</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoFileInput = document.getElementById('videoFile');
+            const generateBtn = document.getElementById('generateBtn');
+            const loadingContainer = document.getElementById('loadingContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const fileInfo = document.getElementById('fileInfo');
+            const fileName = document.getElementById('fileName');
+            const fileSize = document.getElementById('fileSize');
+            const progressBar = document.getElementById('progressBar');
+            const stepText = document.getElementById('stepText');
+            const downloadTranscript = document.getElementById('downloadTranscript');
+            const downloadAudio = document.getElementById('downloadAudio');
+            const languageOptions = document.querySelectorAll('input[name="language"]');
+            
+            let selectedFile = null;
+            let selectedLanguage = 'english';
+            
+            // Language selection
+            languageOptions.forEach(option => {
+                option.addEventListener('change', function() {
+                    selectedLanguage = this.value;
+                });
+            });
+            
+            // File upload handling
+            videoFileInput.addEventListener('change', function(e) {
+                if (this.files && this.files[0]) {
+                    selectedFile = this.files[0];
+                    
+                    // Check file size (100MB max)
+                    if (selectedFile.size > 100 * 1024 * 1024) {
+                        alert('File size exceeds 100MB limit. Please choose a smaller file.');
+                        this.value = '';
+                        selectedFile = null;
+                        generateBtn.disabled = true;
+                        fileInfo.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Check file type
+                    const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+                    if (!['mp4', 'mov', 'avi'].includes(fileExtension)) {
+                        alert('Please select a valid video file (MP4, MOV, or AVI).');
+                        this.value = '';
+                        selectedFile = null;
+                        generateBtn.disabled = true;
+                        fileInfo.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Show file info
+                    fileName.textContent = selectedFile.name;
+                    fileSize.textContent = formatFileSize(selectedFile.size);
+                    fileInfo.style.display = 'block';
+                    generateBtn.disabled = false;
+                }
+            });
+            
+            // Generate button click
+            generateBtn.addEventListener('click', function() {
+                if (!selectedFile) return;
+                
+                // Hide upload container and show loading
+                document.querySelector('.upload-container').style.display = 'none';
+                loadingContainer.style.display = 'block';
+                
+                // Simulate processing
+                simulateProcessing();
+            });
+            
+            // Simulate the processing steps
+            function simulateProcessing() {
+                // Step 1: Uploading
+                progressBar.style.width = '25%';
+                stepText.textContent = 'Uploading video to server...';
+                
+                setTimeout(() => {
+                    // Step 2: Processing with Red Universe AI
+                    progressBar.style.width = '50%';
+                    stepText.textContent = 'Generating transcript with Red Universe AI...';
+                    
+                    setTimeout(() => {
+                        // Step 3: Extracting audio
+                        progressBar.style.width = '75%';
+                        stepText.textContent = 'Extracting audio with advanced algorithms...';
+                        
+                        setTimeout(() => {
+                            // Step 4: Complete
+                            progressBar.style.width = '100%';
+                            stepText.textContent = 'Finalizing your files...';
+                            
+                            setTimeout(() => {
+                                // Show results
+                                loadingContainer.style.display = 'none';
+                                resultsContainer.style.display = 'block';
+                                
+                                // Generate transcript content based on selected language
+                                const transcriptContent = generateTranscriptContent(selectedFile.name, selectedLanguage);
+                                
+                                // Create transcript blob
+                                const transcriptBlob = new Blob([transcriptContent], { type: 'text/plain' });
+                                
+                                // Set download links
+                                downloadTranscript.href = URL.createObjectURL(transcriptBlob);
+                                downloadTranscript.download = selectedFile.name.replace(/\.[^/.]+$/, "") + '_transcript.txt';
+                                
+                                // Create a proper audio file (simulated for frontend)
+                                createAudioFile(selectedFile.name);
+                            }, 1000);
+                        }, 2500);
+                    }, 3000);
+                }, 2000);
+            }
+            
+            // Generate transcript content based on language
+            function generateTranscriptContent(filename, language) {
+                const date = new Date().toLocaleString();
+                const baseText = `Transcript generated by Red Universe AI\nVideo: ${filename}\nDate: ${date}\nLanguage: ${language}\n\n`;
+                
+                if (language === 'hindi') {
+                    return baseText + 
+                        "यह एक उदाहरण ट्रांसक्रिप्ट है जो Red Universe AI द्वारा जनरेट किया गया है।\n\n" +
+                        "वीडियो ट्रांसक्रिप्शन तकनीक का उपयोग करके, हम वीडियो सामग्री से टेक्स्ट निकालते हैं।\n\n" +
+                        "Red Universe AI की उन्नत एल्गोरिदम अंग्रेजी और हिंदी दोनों भाषाओं में सटीक ट्रांसक्रिप्ट प्रदान करती है।\n\n" +
+                        "वास्तविक परियोजना में, यहाँ वीडियो की वास्तविक सामग्री का ट्रांसक्रिप्शन दिखाई देगा।";
+                } else {
+                    return baseText + 
+                        "This is a sample transcript generated by Red Universe AI.\n\n" +
+                        "Using advanced video transcription technology, we extract text from video content.\n\n" +
+                        "Red Universe AI's sophisticated algorithms provide accurate transcripts in both English and Hindi languages.\n\n" +
+                        "In a real project, the actual transcription of the video content would appear here.";
+                }
+            }
+            
+            // Create a proper audio file
+            function createAudioFile(filename) {
+                // In a real implementation, this would be the actual extracted audio
+                // For demo purposes, we'll create a simulated audio file
+                
+                // Create a simple audio file for demonstration
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.value = 440;
+                gainNode.gain.value = 0.1;
+                
+                // Create a short audio segment (simulating extracted audio)
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 1);
+                
+                // Create a download link for the audio file
+                setTimeout(() => {
+                    // Create a simple audio blob for demonstration
+                    const audioBlob = generateAudioBlob();
+                    downloadAudio.href = URL.createObjectURL(audioBlob);
+                    downloadAudio.download = filename.replace(/\.[^/.]+$/, "") + '_audio.mp3';
+                }, 1000);
+            }
+            
+            // Generate a simple audio blob for demonstration
+            function generateAudioBlob() {
+                // Create a simple audio file for demonstration
+                // In a real implementation, this would be the actual extracted audio
+                const audioData = "RIFF\x00\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00\x44\xac\x00\x00\x88\x58\x01\x00\x02\x00\x10\x00data\x00\x00\x00\x00";
+                return new Blob([audioData], { type: 'audio/mpeg' });
+            }
+            
+            // Helper function to format file size
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' bytes';
+                else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                else return (bytes / 1048576).toFixed(1) + ' MB';
+            }
+            
+            // Drag and drop functionality
+            const dropArea = document.querySelector('.file-input-label');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, preventDefaults, false);
+            });
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropArea.addEventListener(eventName, highlight, false);
+            });
+            
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropArea.addEventListener(eventName, unhighlight, false);
+            });
+            
+            function highlight() {
+                dropArea.style.borderColor = '#ff6b6b';
+                dropArea.style.backgroundColor = 'rgba(255, 107, 107, 0.1)';
+            }
+            
+            function unhighlight() {
+                dropArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                dropArea.style.backgroundColor = 'transparent';
+            }
+            
+            dropArea.addEventListener('drop', handleDrop, false);
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length) {
+                    videoFileInput.files = files;
+                    const event = new Event('change');
+                    videoFileInput.dispatchEvent(event);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
